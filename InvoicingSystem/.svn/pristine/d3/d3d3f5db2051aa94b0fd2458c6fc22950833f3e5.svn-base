@@ -1,0 +1,255 @@
+package businesslogic.kindbl;
+
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+import main.IPAddress;
+import businesslogic.commoditybl.ChangeFromKind;
+import businesslogic.commoditybl.CommodityOperator;
+import businesslogic.commoditybl.CommodityProvider;
+import dataservice.kinddataservice.KindDataService;
+import po.KindPo;
+import vo.KindInfoVO;
+
+
+public class KindOperator implements KindProvider,ChangeFromComd {
+
+	KindPo root=null;
+	KindDataService kindData=null;
+	
+	KindPo matchedPo=null;
+	
+	public KindOperator(){
+		String ip=IPAddress.ip;
+	try{
+		kindData=(KindDataService)Naming.lookup("rmi://"+ip+":1103/kindData");
+	}catch(MalformedURLException e) {
+		e.printStackTrace();
+	}catch (RemoteException e){
+		e.printStackTrace();
+	} catch (NotBoundException e){
+		e.printStackTrace();
+	}
+	
+	try {
+		root=kindData.read_root();
+		System.out.println(root.get_NumOfChild());
+	} catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	try {
+		root=kindData.read_root();
+	} catch (RemoteException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+
+	}
+}
+	
+	
+	
+	
+	public int addKind(KindPo po) 
+	{
+		KindPo father=po.get_Father();
+		String newNum=father.get_Num()+"-"+String.valueOf(father.get_NumOfChild()+1);
+		po.set_Num(newNum);	
+		po.set_AllowChild(true);
+		//System.out.println(po.get_Name()+";"+po.get_Num()+";");
+		father.add_Child(po);
+	
+		this.update_root();
+		return 1;
+	}
+
+	public int delKind(KindPo po) {
+		// TODO Auto-generated method stub
+		
+		
+		KindPo father=po.get_Father();
+	    ArrayList<KindPo> tempList=father.getChilds();
+	    int length=tempList.size();
+	    
+	    
+	   if(!po.isallowChild()){
+	    ChangeFromKind cfk=new CommodityOperator();
+	    cfk.delCommodityByName(po.get_Name());
+	    }
+	    if(po.isallowChild()&&po.is_father()){
+	    	ChangeFromKind cfk=new CommodityOperator();
+	    	cfk.delCommodityByKindName(po.get_Name());
+	  	    }
+	   
+	    for(int i=0;i<length;i++){
+	    	if(po.get_Num().equals(tempList.get(i).get_Num())){
+	    	father.del_Child(i);
+	    	break;
+	    	}
+	     }
+	    this.update_root();
+		return 1;
+	}
+
+	public int changeKind(KindPo po) {
+		// TODO Auto-generated method stub
+		//KindPo father=po.get_Father();
+		KindPo father=po.get_Father();
+		ArrayList<KindPo> list=father.getChilds();
+		int length=list.size();
+		String oldName=null;
+		String newName=null;
+		for(int i=0;i<length;i++){
+			KindPo temp=list.get(i);
+			if(temp.get_Num().equals(po.get_Num())){
+				oldName=temp.get_Name();
+				newName=po.get_Name();
+				list.set(i, po);
+			}
+		}
+		
+		this.update_root();
+		ChangeFromKind cfk=new CommodityOperator();
+		
+		cfk.changeComdKindName(oldName, newName);
+		
+		return 1;
+	}
+
+
+
+	public ArrayList<KindPo> getSons(KindPo po) {
+		// TODO Auto-generated method stub
+		ArrayList<KindPo> list=po.getChilds();
+		
+		
+		return list;
+	}
+
+	public KindPo getWholeTree() {
+		// TODO Auto-generated method stub
+		return root;
+	}
+	
+	
+	
+	private void update_root(){
+		try {
+			kindData.write_root(root);
+			
+			root=kindData.read_root();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	public void update_Stock(String oldKindName,String newKindName){
+		ChangeFromKind comdPro=new CommodityOperator();
+		comdPro.changeComdKindName(oldKindName, newKindName);
+	}
+
+    
+	public KindInfoVO get_Sons(String name) {
+		// TODO Auto-generated method stub
+		matchKind(name,root);
+		
+		if(matchedPo!=null){
+			ArrayList<String> kindList=new ArrayList<String>();
+			ArrayList<String> idList=new ArrayList<String>();
+			int length=matchedPo.get_NumOfChild();
+			for(int i=0;i<length;i++){
+				KindPo temp=matchedPo.getChilds().get(i);
+				if(temp.isallowChild())
+					kindList.add(temp.get_Name());
+				else
+					idList.add(temp.get_Num());
+			}
+			
+			return new KindInfoVO(kindList,idList);
+			}
+		return null;
+	}
+	
+	
+	public void matchKind(String name,KindPo po){
+		if(po.get_Name().equals(name))
+		{
+			matchedPo=po;
+		}
+		else if(po.is_father())
+		{
+			for(int i=0;i<po.get_NumOfChild();i++){
+				matchKind(name,po.getChilds().get(i));
+		}
+		}
+	}
+	
+	
+
+   public int addCommodityToKind(String fatherName, String kindNum,
+			String comdName) {
+		// TODO Auto-generated method stub
+		matchKind(fatherName,root);
+		KindPo child=new KindPo(comdName,matchedPo,kindNum);
+		child.set_AllowChild(false);
+		matchedPo.add_Child(child);
+		update_root();
+		return 1;
+	}
+
+	public void delCommodityToKind(String name) {
+		// TODO Auto-generated method stub
+		matchKind(name,root);
+		delKind(matchedPo);
+		update_root();
+		}
+
+	public String getFather(String name) {
+		// TODO Auto-generated method stub
+		matchKind(name,root);
+		
+		KindPo father=matchedPo.get_Father();
+		if(father!=null)
+			return father.get_Name();
+		else
+			return name;
+		}
+
+
+
+
+	public int changeCommodityName(String oldName,String newName) {
+		// TODO Auto-generated method stub
+		matchKind(oldName,root);
+		matchedPo.set_kindName(newName);
+		update_root();
+		
+		return 1;
+	}
+
+
+
+
+	public void init() {
+		// TODO Auto-generated method stub
+		try {
+		
+			kindData.init();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public void initCommodity(){
+		ChangeFromKind cfk=new CommodityOperator();
+		cfk.init();
+	}
+	
+
+}

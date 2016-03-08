@@ -1,0 +1,116 @@
+package data.marketdata;
+
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+
+import po.GiftListPO;
+import po.MarketListPO;
+import po.SaleListPO;
+import po.StackListPO;
+import po.UnsaleListPO;
+import po.UnstackListPO;
+import dataservice.marketdataservice.MarketDataService;
+
+public class MarketDataControl extends UnicastRemoteObject implements MarketDataService{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	MarketData ma;
+	Unity uni;
+	public MarketDataControl() throws RemoteException{
+		ma = new MarketData();
+		uni = new Unity();
+	}
+
+	public ArrayList<SaleListPO> findSale(String start, String end,
+			String thingid, String memberid, String salerid, String house) throws RemoteException {
+		//查看单据1
+		return ma.findSale(start, end, thingid, memberid, salerid, house);
+	}
+
+	public ArrayList<StackListPO> findStack(String start, String end,
+			String thingid, String memberid, String salerid, String house) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.findStack(start, end, thingid, memberid, salerid, house);
+	}
+
+	public ArrayList<UnsaleListPO> findUnsale(String start, String end,
+			String thingid, String memberid, String salerid, String house) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.findUnsale(start, end, thingid, memberid, salerid, house);
+	}
+
+	public ArrayList<UnstackListPO> findUnstack(String start, String end,
+			String thingid, String memberid, String salerid, String house) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.findUnstack(start, end, thingid, memberid, salerid, house);
+	}
+
+	public ArrayList<GiftListPO> findGift(String start, String end,
+			String thingid, String memberid, String salerid, String house) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.findGift(start, end, thingid, memberid, salerid, house);
+	}
+
+	public String insertSale(SaleListPO po,int ok) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.insertSale(po,ok);
+	}
+
+	public String insertGift(GiftListPO po,int ok) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.insertGift(po,ok);
+	}
+
+	public String insertStack(StackListPO po,int ok) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.insertStack(po,ok);
+	}
+
+	public String insertUnsale(UnsaleListPO po,int ok) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.insertUnsale(po,ok);
+	}
+
+	public String insertUnstack(UnstackListPO po,int ok) throws RemoteException {
+		// TODO Auto-generated method stub
+		return ma.insertUnstack(po,ok);
+	}
+
+	public String getId(String n) throws RemoteException {
+		// TODO Auto-generated method stub
+		return uni.getId(n);
+	}
+
+	public void closeData(){
+		// 关闭
+		uni.store();
+		ma.store();
+		
+	}
+
+	public int[] check() throws RemoteException {
+		// 查看审批和未审批单据的数量
+		return ma.check();
+	}
+
+	public ArrayList<MarketListPO> showList(int i) throws RemoteException {
+		// 查看
+		return ma.showList(i);
+	}
+
+	public static void main(String[] args){
+		try {
+			MarketDataControl a = new MarketDataControl();
+			a.ma.firstWrite();
+			a.uni.first();
+			System.out.print("ok");
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+}

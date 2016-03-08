@@ -1,0 +1,364 @@
+package presentation.checkui;
+
+import java.awt.Dimension;
+
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+
+import businesslogic.billmanagementbl.SendBillToManager;
+import po.BillPO;
+import po.GiftListPO;
+import po.PaycashPO;
+import po.PayinPO;
+import po.PayoutPO;
+import po.SaleListPO;
+import po.StackListPO;
+import po.UnsaleListPO;
+import po.UnstackListPO;
+import po.accountlineitempo;
+
+public class dialogmaker3 {//红冲部分
+	JDialog dialog;
+	JButton button=new JButton("提交");
+	
+	JTable table;
+	JScrollPane scroll;
+	JOptionPane optionpane=new JOptionPane();
+	String type;
+	
+	PayinPO payinpo=null;
+	PayoutPO payoutpo=null;
+	PaycashPO paycashpo=null;
+	SaleListPO salelistpo=null;
+	UnsaleListPO unsalelistpo=null;
+	StackListPO stacklistpo=null;
+	UnstackListPO unstacklistpo=null;
+	
+	GiftListPO giftlistpo=null;
+	SendBillToManager sbtm=new SendBillToManager();
+	
+	String[] str1={"类型","编号","操作员","时间","客户","转账列表","总额"};
+	String[] str2={"类型","编号","操作员","时间","账户","条目列表","总额"};
+	String[] str3={"类型","编号","操作员","客户名","客户ID","商品列表","仓库","总价","折让后总价","折让","代金券"};
+	String[] str4={"类型","编号","操作员","客户名","客户ID","商品列表","仓库","总价"};
+	String[] str5={"类型","编号","操作员","客户名","客户ID","赠品列表","仓库","总价"};
+	
+	String[][] ss;
+	public dialogmaker3(String s,BillPO bp){
+		 type=s;
+		 optionpane.setSize(1000, 600);
+		 if(type.equals("in")){ 
+			
+			 payinpo=(PayinPO)bp;
+			 
+			 ss=new String[1][7];
+			 
+			 ss[0][0]=payinpo.getType();
+			 ss[0][1]=payinpo.getIdentifier();
+			 ss[0][2]=payinpo.getOperator();
+			 ss[0][3]=payinpo.gettime();
+			 ss[0][4]=payinpo.getcustomer();
+			 ss[0][5]="转账列表";
+			 ss[0][6]=Double.toString(payinpo.gettotal());
+			 
+			 table=new JTable(ss,str1);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			 
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "收款单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+			 
+		 }
+		 else if(type.equals("out")){
+			
+			 payoutpo=(PayoutPO)bp;
+			 
+			 
+			 ss=new String[1][7];
+			 
+			 ss[0][0]=payoutpo.getType();
+			 ss[0][1]=payoutpo.getIdentifier();
+			 ss[0][2]=payoutpo.getOperator();
+			 ss[0][3]=payoutpo.gettime();
+			 ss[0][4]=payoutpo.getcustomer();
+			 ss[0][5]="转账列表";
+			 ss[0][6]=Double.toString(payoutpo.gettotal());
+			 
+			 table=new JTable(ss,str1);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "付款单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 else if(type.equals("cash")){
+			 
+				 paycashpo=(PaycashPO)bp;
+			 
+			 ss=new String[1][7];
+			 
+				 ss[0][0]=paycashpo.getType();
+				 ss[0][1]=paycashpo.getIdentifier();
+				 ss[0][2]=paycashpo.getOperator();
+				 ss[0][3]=paycashpo.gettime();
+				 ss[0][4]=paycashpo.getaccount();
+				 ss[0][5]="转账列表";
+				 ss[0][6]=Double.toString(paycashpo.gettotal());
+			 
+			 table=new JTable(ss,str2);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			 
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "现金付款单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 else if(type.equals("sale")){
+			
+				 salelistpo=(SaleListPO)bp;
+			 
+			 ss=new String[1][11];
+			 
+				 ss[0][0]=salelistpo.getType();
+				 ss[0][1]=salelistpo.getIdentifier();
+				 ss[0][2]=salelistpo.getOperator();
+				 ss[0][3]=salelistpo.getMemberName();
+				 ss[0][4]=salelistpo.getMemberId();
+				 
+				 ss[0][5]="商品列表";
+				 ss[0][6]=salelistpo.getHouse();
+				 ss[0][7]=Double.toString(salelistpo.getbefore());
+				 ss[0][8]=Double.toString(salelistpo.getafter());
+				 ss[0][9]=Double.toString(salelistpo.getdiscount());
+				 ss[0][10]=Double.toString(salelistpo.getpaper());
+			 
+			 table=new JTable(ss,str3);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			
+			 button.addActionListener(new buttonlistener());
+			
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "销售单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 else if(type.equals("unsale")){
+			 
+				 unsalelistpo=(UnsaleListPO)bp;
+			 
+			 ss=new String[1][8];
+			
+				 ss[0][0]=unsalelistpo.getType();
+				 ss[0][1]=unsalelistpo.getIdentifier();
+				 ss[0][2]=unsalelistpo.getOperator();
+				 ss[0][3]=unsalelistpo.getMemberName();
+				 ss[0][4]=unsalelistpo.getMemberId();
+				 
+				 ss[0][5]="商品列表";
+				 ss[0][6]=unsalelistpo.getHouse();
+				 ss[0][7]=Double.toString(unsalelistpo.getPrice());
+				 
+			 
+			 table=new JTable(ss,str4);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			 
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "销售退货单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 else if(type.equals("stack")){
+			 
+				 stacklistpo=(StackListPO)bp;
+			 
+			 ss=new String[1][8];
+			
+				 ss[0][0]=stacklistpo.getType();
+				 ss[0][1]=stacklistpo.getIdentifier();
+				 ss[0][2]=stacklistpo.getOperator();
+				 ss[0][3]=stacklistpo.getMemberName();
+				 ss[0][4]=stacklistpo.getMemberId();
+				 
+				 ss[0][5]="商品列表";
+				 ss[0][6]=stacklistpo.getHouse();
+				 ss[0][7]=Double.toString(stacklistpo.getPrice());
+				 
+			 
+			 table=new JTable(ss,str4);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			 
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "进货单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 else if(type.equals("unstack")){
+			 
+				 unstacklistpo=(UnstackListPO)bp;
+			 
+			 ss=new String[1][8];
+			 
+				 ss[0][0]=unstacklistpo.getType();
+				 ss[0][1]=unstacklistpo.getIdentifier();
+				 ss[0][2]=unstacklistpo.getOperator();
+				 ss[0][3]=unstacklistpo.getMemberName();
+				 ss[0][4]=unstacklistpo.getMemberId();
+				 
+				 ss[0][5]="商品列表";
+				 ss[0][6]=stacklistpo.getHouse();
+				 ss[0][7]=Double.toString(unstacklistpo.getPrice());
+				 
+			 
+			 table=new JTable(ss,str4);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "退货单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 else if(type.equals("gift")){
+			
+				 giftlistpo=(GiftListPO)bp;
+			 
+			 ss=new String[1][8];
+			
+				 ss[0][0]=giftlistpo.getType();
+				 ss[0][1]=giftlistpo.getIdentifier();
+				 ss[0][2]=giftlistpo.getOperator();
+				 ss[0][3]=giftlistpo.getMemberName();
+				 ss[0][4]=giftlistpo.getMemberId();
+				 
+				 ss[0][5]="赠品列表";
+				 ss[0][6]=stacklistpo.getHouse();
+				 ss[0][7]=Double.toString(giftlistpo.getPrice());
+				 
+			 
+			 table=new JTable(ss,str5);
+			 scroll=new JScrollPane(table);
+			 optionpane.add(scroll);
+			 optionpane.add(button);
+			 
+			 optionpane.setPreferredSize(new Dimension(700,400));
+			 optionpane.setLayout(null);
+			 button.setBounds(270, 330, 150, 30);
+			
+			 button.addActionListener(new buttonlistener());
+			 
+			 scroll.setBounds(50, 50, 600, 250);scroll.setVisible(true);
+			 dialog=optionpane.createDialog(optionpane, "赠品单");
+			 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			 dialog.setVisible(true);
+		 }
+		 
+		 
+	}
+	public class buttonlistener implements ActionListener{
+
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			String re="";
+			if(payinpo!=null){
+				re=sbtm.sendBill(payinpo,"SKD");
+			}
+			if(payoutpo!=null){
+				re=sbtm.sendBill(payoutpo,"FKD");
+			}
+			if(paycashpo!=null){
+				re=sbtm.sendBill(paycashpo,"XJFKD");
+			}
+			if(salelistpo!=null){
+				re=sbtm.sendBill(salelistpo,"XSD");
+			}
+			if(unsalelistpo!=null){
+				re=sbtm.sendBill(unsalelistpo,"XSTHD");
+			}
+			if(stacklistpo!=null){
+				re=sbtm.sendBill(stacklistpo,"JHD");
+			}
+			if(unstacklistpo!=null){
+				re=sbtm.sendBill(unstacklistpo,"THD");
+			}
+			if(giftlistpo!=null){
+				re=sbtm.sendBill(giftlistpo,"KCZSD");
+			}
+			if(re.equals("Succeed")){
+				JOptionPane.showMessageDialog(null, "提交成功");
+			}
+			
+		}
+		
+	}
+	public static void main(String args[]){
+		ArrayList<accountlineitempo> p=new ArrayList<accountlineitempo>();
+		accountlineitempo s=new accountlineitempo("linxin",100,"sdf");
+		p.add(s);
+		PayoutPO po=new PayoutPO("hc","liuzhijia",p);
+		dialogmaker3 k=new dialogmaker3("out",po);
+	}
+
+}

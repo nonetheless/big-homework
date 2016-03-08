@@ -1,0 +1,62 @@
+package businesslogic.promotionbl;
+
+import java.util.ArrayList;
+
+import vo.MemberVO;
+
+public class MockMember {
+	
+	public ArrayList<MemberVO> findByLevel(int level){
+		
+		ArrayList<MemberVO> list1=new ArrayList<MemberVO>();
+		ArrayList<MemberVO> list2=new ArrayList<MemberVO>();
+		ArrayList<MemberVO> list3=new ArrayList<MemberVO>();
+		ArrayList<MemberVO> list4=new ArrayList<MemberVO>();
+		ArrayList<MemberVO> list5=new ArrayList<MemberVO>();
+		
+		MemberVO vo1=new MemberVO("131250193", 1, "didengyonghu", "liuzhijia", 
+				"", "", "", "", "", 100.1, 10.1, 11.1);
+		
+		MemberVO vo21=new MemberVO("131250192", 2, "didengyonghu", "hanchun", 
+				"", "", "", "", "", 100.1, 10.1, 11.1);
+		
+		MemberVO vo22=new MemberVO("131250190", 2, "didengyonghu", "linxin", 
+				"", "", "", "", "", 100.1, 10.1, 11.1);
+		
+		MemberVO vo31=new MemberVO("131250191", 3, "didengyonghu", "wuxiaokai", 
+				"", "", "", "", "", 100.1, 10.1, 11.1);
+		
+		MemberVO vo32=new MemberVO("011250193", 3, "didengyonghu", "la", 
+				"", "", "", "", "", 100.1, 10.1, 11.1);
+		
+		MemberVO vo41=new MemberVO("021250193", 4, "didengyonghu", "ss", 
+				"", "", "", "", "", 100.1, 10.1, 11.1);
+		
+		
+		list1.add(vo1);
+		list2.add(vo21);
+		list2.add(vo22);
+		list3.add(vo31);
+		list3.add(vo32);
+		list4.add(vo41);
+		
+		if(level==1){
+			return list1;
+		}
+		else if(level==2){
+			return list2;
+		}
+		else if(level==3){
+			return list3;
+		}
+		else if(level==4){
+			return list4;
+		}
+		else if(level==5){
+			return list5;
+		}
+		
+		return null;
+		
+	}
+}

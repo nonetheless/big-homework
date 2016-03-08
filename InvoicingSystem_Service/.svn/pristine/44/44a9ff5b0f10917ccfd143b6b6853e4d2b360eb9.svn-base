@@ -1,0 +1,14 @@
+package RMI_Driver;
+
+import java.util.ArrayList;
+
+import po.PaycashPO;
+import dataservice.paymentdataservice.paymentcashdataservice;
+
+public class paymentcashdataservice_driver {
+	public void run(paymentcashdataservice s){
+	
+	}
+
+
+}

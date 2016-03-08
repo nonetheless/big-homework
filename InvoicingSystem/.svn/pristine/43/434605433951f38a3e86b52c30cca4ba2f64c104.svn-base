@@ -1,0 +1,91 @@
+package presentation.commodityui;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.JTree;
+
+import presentation.kindui.KindUI;
+/*添加新商品时，选择分类所用的界面
+ * 继承了KindUI，只是按钮不一样
+ */
+
+
+public class KindChooseFrame extends KindUI {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel buttonPanel;
+	private JButton sureButton;
+
+    private String currentKind;
+    private AddFrame frame;
+	private JFrame fatherFrame;
+	private JTree tree=super.tree;
+	public KindChooseFrame(AddFrame frame){
+	super();
+	this.frame=frame;
+	fatherFrame=super.frame;
+
+	JPanel opPanel=super.opPanel;
+	opPanel.setVisible(false);
+	buttonPanel=new JPanel();
+	sureButton=new JButton("确认分类");
+	sureButton.addActionListener(new EnsureListener());
+	buttonPanel.add(sureButton);
+	fatherFrame.add(buttonPanel,BorderLayout.SOUTH);
+	fatherFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+	fatherFrame.setVisible(true);
+	fatherFrame.repaint();
+	
+  }
+	
+	public void valueChanged(TreeSelectionEvent arg0){
+		//JTree tree=get_Tree();
+		
+		
+	}
+	class EnsureListener implements ActionListener{
+
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		    DefaultMutableTreeNode selectedNode=(DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
+		    if(selectedNode!=null){
+		    currentKind=(String)selectedNode.getUserObject();
+		    
+			frame.set_KindText(currentKind);
+		    match_Po(currentKind);
+		    
+		    System.out.println(matchedPo.get_Name()+" "+matchedPo.get_Num()+" "+matchedPo.isallowChild());
+		    if(matchedPo.isallowChild()){
+		    
+		    String kindNum=matchedPo.get_Num()+"-"+String.valueOf(matchedPo.get_NumBase()+1);
+		    frame.set_KindNum(kindNum);
+		    set_Close();
+		    }
+		    else{
+		    	JOptionPane.showMessageDialog(fatherFrame, "该节点是商品，其下不能再加商品！");
+		    	
+		    }
+		    }
+		    else
+		    JOptionPane.showMessageDialog(fatherFrame, "请为你的商品选择类别节点");
+		   }
+	}
+	private void set_Close(){
+		fatherFrame.dispose();
+	}
+	private void match_Po(String name){
+		super.get_KindPo(name, rootPo);
+		
+	}
+}

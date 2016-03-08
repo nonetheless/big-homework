@@ -1,0 +1,9 @@
+package RMI_Driver;
+
+import dataservice.userdataservice.UserDataService;
+
+public class UserDataService_driver {
+public void drive(UserDataService uds){
+	
+}
+}

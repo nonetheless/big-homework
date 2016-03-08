@@ -1,0 +1,15 @@
+package RMI_Driver;
+
+import java.rmi.RemoteException;
+
+import dataservice.commoditydataservice.CommodityDataService;
+import po.CommodityPo;
+import po.StockBillsPo;
+
+public class CommodityDataService_Driver {
+	
+public void drive(CommodityDataService cds) throws RemoteException{
+	
+	
+}
+}

@@ -1,0 +1,204 @@
+package presentation.loginui;
+
+import java.awt.Font;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.border.EmptyBorder;
+
+import businesslogic.loginbl.LoginController;
+import businesslogicservice.loginblservice.LoginBlService;
+import vo.UserVo;
+
+public class LoginUI extends JFrame{
+	
+
+	private static final long serialVersionUID = 1L;
+	
+	private JPanel contentPanel;
+	private JPanel mainPanel;
+	
+	private JLabel clientKind;
+	private JLabel user;
+	private JLabel code;
+	
+	private JComboBox<String> clientStatus;
+	
+	private JTextField userName;
+	private JPasswordField password;
+	
+	private JButton login;
+	private JButton register;
+	private JButton exit;
+
+	private ImageIcon bg;
+
+	private JLabel imageLabel; 
+	
+	public LoginUI(){
+		
+		String lookAndFeel = UIManager.getSystemLookAndFeelClassName();
+		
+		try{	
+			UIManager.setLookAndFeel(lookAndFeel);			
+		}catch (UnsupportedLookAndFeelException ex1) {			       
+			System.err.println("Unsupported LookAndFeel: ");
+	   } catch (ClassNotFoundException ex2) {     
+		   System.err.println("LookAndFeel class not found: ");	   
+	   } catch (InstantiationException ex3) {   
+		   System.err.println("Could not load LookAndFeel: ");
+	   } catch (IllegalAccessException ex4) {
+		   System.err.println("Cannot use LookAndFeel: ");
+	}
+		
+		
+		Toolkit kit=Toolkit.getDefaultToolkit();
+		
+		setBounds(100,100,450,300);
+		setResizable(false);
+		Image bg_icon=kit.getImage("Image//login_icon.jpg");
+		setIconImage(bg_icon);
+		setTitle("登陆");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		contentPanel =new JPanel();
+		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPanel.setLayout(null);
+		setContentPane(contentPanel);
+		contentPanel.setOpaque(false);
+		
+		bg=new ImageIcon("Image//login.jpg");
+		imageLabel=new JLabel(bg);
+		imageLabel.setBounds(0, 0, 450, 300);
+		contentPanel.add(imageLabel);
+		
+		
+		mainPanel = new JPanel();
+		imageLabel.add(mainPanel);
+		mainPanel.setBounds(0,0,450,300);
+		mainPanel.setLayout(null);
+		mainPanel.setOpaque(false);
+		
+		
+		clientKind=new JLabel("用户身份");
+		clientKind.setBounds(70, 39, 64, 22);
+		clientKind.setFont(new Font(Font.DIALOG,Font.BOLD,15));
+		mainPanel.add(clientKind);
+		
+		clientStatus = new JComboBox<String>(new String[] {"库存管理员", "销售人员", "财务人员" ,"总经理","系统管理员"});
+		clientStatus.setBounds(156, 38, 200, 21);
+		mainPanel.add(clientStatus);
+		
+		user = new JLabel("用户名：");
+		user.setBounds(75, 75, 81, 22);
+		user.setFont(new Font(Font.DIALOG,Font.BOLD,15));
+		mainPanel.add(user);
+
+		userName = new JTextField();
+		userName.setBounds(156, 74, 200, 22);
+		mainPanel.add(userName);
+		userName.setColumns(10);
+
+		code = new JLabel("密码：");
+		code.setBounds(88, 109, 80, 34);
+		code.setFont(new Font(Font.DIALOG,Font.BOLD,15));
+		mainPanel.add(code);
+
+		password = new JPasswordField();
+		password.setBounds(156, 114, 200, 21);
+		mainPanel.add(password);
+
+		login = new JButton("登陆");
+		login.setBounds(43, 181, 100, 31);
+		login.setFont(new Font(Font.DIALOG,Font.BOLD,15));
+		mainPanel.add(login);
+		login.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				userLogin();
+			}
+		});
+		
+	/*	register= new JButton("注册");
+		register.setFont(new Font(Font.DIALOG,Font.BOLD,15));
+		register.setBounds(166, 181, 100, 31);
+		mainPanel.add(register);
+		register.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				userRegister();
+			}
+
+			
+		});*/
+		
+		exit = new JButton("退出");
+		exit.setBounds(287, 181, 100, 31);
+		exit.setFont(new Font(Font.DIALOG,Font.BOLD,15));
+		mainPanel.add(exit);
+		exit.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				System.exit(0);
+			}		
+		});
+		
+		setVisible(true);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+		
+
+	private void userLogin() {
+		String status=null;
+		UserVo  vo=null;
+		LoginBlService loginBl=new LoginController();
+		boolean b1=!(userName.getText().equals(""));
+		boolean b2=!(password.getPassword().length==0);
+		
+		if(b1&&b2){
+		String id=userName.getText();
+		String passWord=new String(password.getPassword());
+		
+		status=(String)clientStatus.getSelectedItem();	
+	    vo=new UserVo(status,null,id,passWord,0);
+	    UserVo resultVo=loginBl.login(vo);
+	    
+	    if(resultVo!=null){
+	    	this.dispose();
+	    	String name=loginBl.getUserName(id);
+	    	vo.setName(name);
+	    	SystemController sct=new SystemController();
+	    	sct.show(vo);
+	    }
+	    else{
+	    	
+	    	JOptionPane.showMessageDialog(this,"登录失败");
+	    }
+	    }
+		else{
+			JOptionPane.showMessageDialog(this, "信息不全，登录失败");
+		}
+	
+	}
+	
+	
+	
+	
+
+	
+	
+	
+}

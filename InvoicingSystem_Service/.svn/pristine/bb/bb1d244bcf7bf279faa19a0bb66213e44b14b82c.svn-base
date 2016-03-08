@@ -1,0 +1,271 @@
+package data.accountdata;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+import javax.swing.JOptionPane;
+
+import po.MemberPO;
+import po.accountPO;
+import data.commoditydata.PoWriter;
+import dataservice.accountdataservice.accountdataservice;
+
+public class accountdata extends UnicastRemoteObject implements accountdataservice{
+	String name="file/account.txt";//文件名
+	String name2="file/account2.txt";
+	String name3="file/account3.txt";
+	public accountdata() throws RemoteException{
+		//ini();
+	}
+	/*public void ini(){
+		ArrayList<accountPO> p=new ArrayList<accountPO>();
+		PoWriter p1=new PoWriter(name);
+		p1.write(p);
+		ArrayList<ArrayList<accountPO>> pp=new ArrayList<ArrayList<accountPO>>();
+		PoWriter pp1=new PoWriter(name2);
+		p1.write(pp);
+		ArrayList<String> s=new ArrayList<String>();
+		PoWriter s1=new PoWriter(name3);
+		p1.write(s);
+		
+	}*/
+	public int add(accountPO ac) throws RemoteException{
+		ArrayList<accountPO> s=readfile(name);int result=1;
+		for(int i=0;i<s.size();i++){
+			if(s.get(i).getname().equals(ac.getname())){
+				result=0;
+				break;
+			}
+		}
+		if(result==1){
+			s.add(ac);
+		}
+		writefile(s,name);
+		return result;
+	}
+	public int del(String acname) throws RemoteException{
+		ArrayList<accountPO> s=readfile(name);int result=0;
+		for(int i=0;i<s.size();i++){
+			if(s.get(i).getname().equals(acname)){
+				result=1;
+				s.remove(i);
+				break;
+			}
+		}
+		
+		writefile(s,name);
+		return result;
+		
+	}
+	public int change(String acname1,String acname2) throws RemoteException{
+		ArrayList<accountPO> s=readfile(name);int result=0;int j;
+		for(int i=0;i<s.size();i++){
+			if(s.get(i).getname().equals(acname1)){
+				
+				j=s.get(i).setname(acname2);
+				if(j==1){
+					result=1;
+				}
+				break;
+			}
+		}
+		
+		writefile(s,name);
+		return result;
+		
+	}
+	public accountPO find(String acname) throws RemoteException{
+		ArrayList<accountPO> s=readfile(name);accountPO p=new accountPO("不存在",-1);
+		//System.out.println(s.get(0).get());
+		for(int i=0;i<s.size();i++){
+			if(s.get(i).getname().equals(acname)){
+				
+				p=s.get(i);
+				
+			}
+		}
+		//System.out.println(p.get());
+		writefile(s,name);
+		return p;
+		
+		
+		
+	}
+	public int change2(String acname,double money) throws RemoteException{
+		ArrayList<accountPO> s=readfile(name);int result=0;int j;
+		for(int i=0;i<s.size();i++){
+			if(s.get(i).getname().equals(acname)){
+				
+				j=s.get(i).setmoney(money);
+				if(j==1){
+					result=1;
+				}
+				break;
+			}
+		}
+		
+		writefile(s,name);
+		return result;
+		
+		
+	}
+	private void writefile(ArrayList<accountPO> x,String fname){
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fname));
+			oos.writeObject(x);
+			oos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+	}
+	private void writefile2(ArrayList<ArrayList<accountPO>> x,String fname){
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fname));
+			oos.writeObject(x);
+			oos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+	}
+	private void writefile3(ArrayList<String> x,String fname){
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fname));
+			oos.writeObject(x);
+			oos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		}
+	}
+	private ArrayList<accountPO> readfile(String fname){
+		ArrayList<accountPO> s=null;
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fname));
+			s = (ArrayList<accountPO>)ois.readObject();
+			ois.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//System.out.println(s.get(0).get());
+		return s;
+	}
+	private ArrayList<ArrayList<accountPO>> readfile2(String fname){
+		ArrayList<ArrayList<accountPO>> s=new ArrayList<ArrayList<accountPO>>();
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fname));
+			s = (ArrayList<ArrayList<accountPO>>)ois.readObject();
+			ois.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return s;
+	}
+	public  ArrayList<String> readfile3(String fname){
+		ArrayList<String> s=new ArrayList<String>();
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fname));
+			s = (ArrayList<String>)ois.readObject();
+			ois.close();
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return s;
+	}
+	public int accountini(){
+		ArrayList<ArrayList<accountPO>> ap=readfile2(name2);
+		ArrayList<String> as=readfile3(name3);
+		ArrayList<accountPO> atp=readfile(name);
+		SimpleDateFormat df = new SimpleDateFormat("yyyy");//设置日期格式
+		String s=df.format(new Date());// new Date()为获取当前系统时间
+		as.add(s);
+		writefile3(as,name3);
+		writefile(atp,name);
+		ap.add(atp);
+		writefile2(ap,name2);
+		return 1;
+	}
+	public ArrayList<accountPO> find2(String year){
+		ArrayList<String> as=readfile3(name3);
+		int k=0;
+		for(int i=0;i<as.size();i++){
+			if(as.get(i).equals(year)){
+				k=i;
+				break;
+			}
+		}
+		writefile3(as,name3);
+		ArrayList<ArrayList<accountPO>> ap=readfile2(name2);
+		writefile2(ap,name2);
+		ArrayList<accountPO> p=new ArrayList<accountPO>();
+		p=ap.get(k);
+		return p;
+	}
+	/*public static void main(String args[]){
+		accountdata d=null;accountPO p=null;int i;
+		try{
+			d=new accountdata();
+		}catch(Exception e){
+			
+		}
+		try{
+			p=d.find("zhanghu1");
+			//i=d.del()
+		}catch(Exception e){
+			
+		}
+		System.out.println(p.get()+"s");
+		
+	}*/
+	
+
+}

@@ -1,0 +1,27 @@
+package RMI_Driver;
+import dataservice.accountdataservice.*;
+/*public class accountdataservice_driver {
+	public void run(accountdataservice s){
+		int i1=s.add(null, 0);
+		if(i1==1){
+			System.out.println("success");
+		}
+		int i2=s.del(null);
+		if(i2==1){
+			System.out.println("success");
+		}
+		int i3=s.change(null, "s");
+		if(i3==1){
+			System.out.println("success");
+		}
+		int i4=s.change2(null, 0);
+		if(i4==1){
+			System.out.println("success");
+		}
+		//String ss=s.find(null);
+		
+			System.out.println(s);
+		
+	}
+
+}*/

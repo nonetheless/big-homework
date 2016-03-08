@@ -1,0 +1,16 @@
+package RMI_Driver;
+
+import java.rmi.RemoteException;
+
+import dataservice.kinddataservice.KindDataService;
+import po.KindPo;
+
+public class KindDataService_Driver {
+public void drive(KindDataService ks) throws RemoteException{
+	
+	
+}
+	
+	
+	
+}

@@ -1,0 +1,90 @@
+package presentation.commodityui;
+
+import java.util.ArrayList;
+
+import po.CommodityPo;
+import vo.CommodityVo;
+import vo.Ex_StockVo;
+import vo.StockBillsVo;
+import businesslogic.commoditybl.CommodityController;
+import businesslogic.commoditybl.CommodityOperator;
+import businesslogic.commoditybl.SearchType;
+import businesslogicservice.commodityblservice.CommodityBlService;
+
+public class CommodityTest {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		CommodityBlService cbl=new CommodityController();
+	/*	int result1=cbl.addCommodity(new  CommodityVo("123","234","飞利浦日光灯","765",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		System.out.println(result1);
+		int result2=cbl.addCommodity(new  CommodityVo("1sdff23","2sdf34","飞利浦日光2323灯","7sff65",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		System.out.println(result2);*/
+		//int result2=cbl.delCommodity("飞利浦日光灯", "234","765");
+		//System.out.println(result2);
+		
+		//int result1=cbl.addCommodity(new  CommodityVo("123","234","飞利浦日光灯","765",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		//System.out.println(result1);
+		
+		//int result2=cbl.addCommodity(new  CommodityVo("123","2304","飞利浦日光灯","7650",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		//int result3=cbl.addCommodity(new  CommodityVo("日光灯","2304","飞利浦日光灯01","70",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		//int result4=cbl.addCommodity(new  CommodityVo("日光灯","23--04","飞利浦日光灯08","40",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		//System.out.println(result2);
+		
+		//cbl.addCommodity(new  CommodityVo("123","2304","飞利浦日光灯","7650",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		//cbl.addCommodity(new  CommodityVo("日光灯","2304","飞利浦日光灯01","70",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		//cbl.addCommodity(new  CommodityVo("日光灯","23--04","飞利浦日光灯08","40",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		
+		
+		
+		/*cbl.addCommodity(new  CommodityVo("123","01-01","欧洲日光灯001","7650",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		cbl.addCommodity(new  CommodityVo("123","01-02","欧洲日光灯002","7651",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		cbl.addCommodity(new  CommodityVo("123","01-03","欧洲日光灯003","7652",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		cbl.addCommodity(new  CommodityVo("123","01-04","欧洲日光灯004","7653",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));*/
+		//int result1=cbl.addCommodity(new  CommodityVo("123","01-08","欧洲日光灯009","7653",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));//名称和型号相同
+		//int result2=cbl.addCommodity(new  CommodityVo("123","01-03","非洲日光灯001","7650",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));//编号相同
+		
+		
+		//int result03=cbl.delCommodity("欧洲日光灯001", "01-01", "7650");
+		//int result03=cbl.delCommodity("欧洲日光灯003", "01-03", "7652");
+		//int result04=cbl.delCommodity("欧洲日光灯003", "01-03", "7652");
+		//System.out.println(result03);
+		//System.out.println(result04);
+		
+		//int result4=cbl.changeCommodity(new  CommodityVo("1234","01-04","美洲日光灯004","大神",56,65.2,54.2,32.4,65.7,87.8,"韩淳大神","sadf","sad","sdag",88));
+		
+		
+		
+		
+	//	cbl.subStockBills(new StockBillsVo("loss",null,null,"hc","美洲日光灯004","大神",100,"001"));
+		
+		
+		
+	/*	cbl.addCommodity(new  CommodityVo("超级灯","01-22","刘至家01","7659",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		cbl.addCommodity(new  CommodityVo("中国灯","01-21","刘至家02","7656",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		cbl.addCommodity(new  CommodityVo("中国灯","01-20","刘至家03","7655",56,65.2,54.2,32.4,65.7,87.8,"sdf","sadf","sad","sdag",88));
+		
+		
+		//CommodityOperator cop=new CommodityOperator();
+		//cop.changeStock("刘至家03", "7650", -20, 20, 0);
+		//cop.changeStock("刘至家03", "7650", 10, 200, 0);
+		
+	//	Ex_StockVo vo=cbl.examineStock(20140101, 20141212);
+	//	System.out.println(vo.get_outNum()+";"+vo.get_outMoney()+";"+vo.get_inNum()+";"+vo.get_inMoney());
+		
+	*/	
+		
+		ArrayList<CommodityVo> testList=cbl.getAllCommoditys();
+        for(int i=0;i<testList.size();i++){
+			System.out.println(testList.get(i).toString());
+		}
+		
+	/*	SearchType type=SearchType.ComdKindName;
+		ArrayList<CommodityVo> list=cbl.search(type, "超级灯");
+		System.out.println(list.size());
+		for(int i=0;i<list.size();i++){
+			System.out.println(list.get(i).toString());
+		}*/
+	}
+
+}

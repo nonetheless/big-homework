@@ -1,0 +1,8 @@
+package businesslogic.commoditybl;
+
+public interface ChangeFromKind {
+public void delCommodityByKindName(String kindName);
+public void delCommodityByName(String comdName);
+public void changeComdKindName(String oldName,String newName);
+public void init();
+}

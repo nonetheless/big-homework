@@ -1,0 +1,100 @@
+package businesslogic.promotionbl;
+
+import java.util.ArrayList;
+
+import businesslogic.commoditybl.CommodityOperator;
+import businesslogic.commoditybl.CommodityProvider;
+import vo.PkgVO;
+
+public class PkgPromotion{
+	
+	CommodityProvider cp;
+	
+	public PkgPromotion(){
+		cp=new CommodityOperator();
+	}
+
+	public ArrayList<PkgVO> getPkgList() {
+		// TODO Auto-generated method stub
+		
+		//PkgVO(String id,String name,ArrayList<PkgItemVO> pkg,double aftPrice)
+		//PkgItemVO(String id,String name,String kind,int num,double price)
+		
+		/*
+		PkgItemVO it1=new PkgItemVO("1312501566","话梅","零食",5,12.5);
+		PkgItemVO it2=new PkgItemVO("1312501376","香肠","零食",2,15);
+		PkgItemVO it3=new PkgItemVO("1312501386","方便面","零食",2,8);
+		PkgItemVO it4=new PkgItemVO("1312504376","日光灯","灯具",1,35);
+		PkgItemVO it5=new PkgItemVO("1312506776","台灯","灯具",2,80);
+		PkgItemVO it6=new PkgItemVO("1312507889","耳机","电子产品",2,30);
+		
+		ArrayList<PkgItemVO> list1=new ArrayList<PkgItemVO>();
+		list1.add(it1);
+		list1.add(it2);
+		list1.add(it3);
+		
+		ArrayList<PkgItemVO> list2=new ArrayList<PkgItemVO>();
+		list2.add(it4);
+		list2.add(it5);
+		list2.add(it6);
+		
+		
+		PkgVO vo1=new PkgVO("1101001","零食包",list1,35);
+		PkgVO vo2=new PkgVO("1101021","电子包",list2,100);
+		
+		ArrayList<PkgVO> plist=new ArrayList<PkgVO>();
+		plist.add(vo1);
+		plist.add(vo2);
+		
+		return plist;
+		*/
+		
+		return cp.getAllPkgs();
+	}
+
+	public PkgVO getPkgGoods(String id) {
+		// TODO Auto-generated method stub
+		return cp.get_Pkg(id);
+	}
+
+	public String addPkg(PkgVO vo) {
+		// TODO Auto-generated method stub
+		int i=cp.addPkg(vo);
+		String str=null;
+		if(i==1){
+			str="Succeed";
+		}
+		else if(i==-1){
+			str="Fail";
+		}
+		return str;
+	}
+
+	public String delPkg(String id) {
+		// TODO Auto-generated method stub
+		int i=cp.delPkg(id);
+		String str=null;
+		if(i==1){
+			str="Succeed";
+		}
+		else if(i==-1){
+			str="Fail";
+		}
+		return str;
+		
+	}
+
+	public String editPkg(PkgVO vo) {
+		// TODO Auto-generated method stub
+		int i=cp.changePkg(vo);
+		System.out.println("i "+i);
+		String str=null;
+		if(i==1){
+			str="Succeed";
+		}
+		else if(i==-1){
+			str="Fail";
+		}
+		return str;
+	}
+}

@@ -1,0 +1,53 @@
+package businesslogic.loginbl;
+
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+
+import main.IPAddress;
+import po.UserPo;
+import dataservice.loginDataService.LoginDataService;
+import vo.UserVo;
+
+
+public class Login  {
+LoginDataService loginData;
+	
+
+    
+	
+	public Login(){
+		String ip=IPAddress.ip;
+	    	try{
+	    		loginData=(LoginDataService)Naming.lookup("rmi://"+ip+":4028/loginData");
+	    	
+	    	}catch(MalformedURLException e) {
+				e.printStackTrace();
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			} catch (NotBoundException e) {
+				e.printStackTrace();
+			}
+	    	
+	    }
+	public UserVo login(UserVo vo){
+    	UserPo po=new UserPo(vo.getStatus(),vo.getName(),vo.getId(),vo.getPassWord(),vo.getLevel());
+	    UserVo result=null;
+	    
+    	try {
+    
+		UserPo	tempResult=loginData.login(po);
+		if(tempResult!=null){
+			result=new UserVo(tempResult.getStatus(),tempResult.getName(),tempResult.getId(),
+					tempResult.getPassWord(),tempResult.getLevel());
+		}
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	return result;
+	}
+	 
+}

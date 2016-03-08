@@ -1,0 +1,21 @@
+package presentation.kindui;
+
+import po.KindPo;
+import businesslogic.kindbl.KindController;
+import businesslogicservice.kindblservice.KindblService;
+
+public class KindTest {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+	 KindblService kbs=new KindController(); 
+	 KindPo rootPo=kbs.get_root();
+	 kbs.addKind(rootPo);
+	 
+	 
+	 
+	 
+
+	}
+
+}

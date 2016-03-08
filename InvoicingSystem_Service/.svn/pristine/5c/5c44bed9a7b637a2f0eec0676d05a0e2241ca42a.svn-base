@@ -1,0 +1,14 @@
+package RMI_Driver;
+
+import java.util.ArrayList;
+
+import po.PayoutPO;
+import dataservice.paymentdataservice.paymentoutdataservice;
+
+public class paymentoutdataservice_driver {
+	public void run(paymentoutdataservice s){
+		
+		
+	}
+
+}

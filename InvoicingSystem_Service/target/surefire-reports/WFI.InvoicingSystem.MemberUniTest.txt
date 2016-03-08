@@ -1,0 +1,10 @@
+-------------------------------------------------------------------------------
+Test set: WFI.InvoicingSystem.MemberUniTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.044 sec <<< FAILURE!
+testAddMember(WFI.InvoicingSystem.MemberUniTest)  Time elapsed: 0.015 sec  <<< FAILURE!
+junit.framework.ComparisonFailure: expected:<success> but was:<false>
+	at junit.framework.Assert.assertEquals(Assert.java:81)
+	at junit.framework.Assert.assertEquals(Assert.java:87)
+	at WFI.InvoicingSystem.MemberUniTest.testAddMember(MemberUniTest.java:49)
+

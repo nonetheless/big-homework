@@ -1,0 +1,47 @@
+package presentation.commodityui;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+
+public class AlarmFrame {
+    JFrame frame;
+	public AlarmFrame(JTable table){
+		frame=new JFrame("库存报警单");
+		Toolkit tool=Toolkit.getDefaultToolkit();
+		Dimension dm=tool.getScreenSize();
+	    int width=500;
+		int height=300;
+	    frame.setBounds(dm.width/2-width/2,dm.height/2-height/2 , width, height);
+	    frame.setLayout(null);
+		
+	    JLabel label=new JLabel("以下商品的库存数量小于报警数量");
+	    JButton button=new JButton("知道了");
+	    button.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent arg0) {
+			frame.dispose();
+			}
+	   });
+	    
+
+		JScrollPane jsp=new JScrollPane(table);
+		
+		frame.setLayout(new BorderLayout());
+		frame.getContentPane().add(jsp,BorderLayout.CENTER);
+		frame.getContentPane().add(label,BorderLayout.NORTH);
+		frame.getContentPane().add(button,BorderLayout.SOUTH);
+		
+		frame.setVisible(true);
+		frame.repaint();
+		
+	}
+}

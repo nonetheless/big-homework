@@ -1,0 +1,54 @@
+package uiTable;
+
+import javax.swing.table.AbstractTableModel;
+
+
+public class ComdTable extends AbstractTableModel {
+   private String[] cols={"商品类别","商品编号","商品名","商品型号","库存数量","平均进价","进价"
+,"售价","最近进价","最近售价","批次","批号","出厂日期","仓库","报警数量","选中"};	   
+    
+   
+   private Object[][] content;
+	
+   
+    public Object[][] getNewTableInfo(){
+    	return content;
+    }
+    public ComdTable(Object[][] content){
+		//this.cols=cols;
+		this.content=content;
+		
+	}
+	
+	public int getColumnCount() {
+		// TODO Auto-generated method stub
+		return cols.length;
+	}
+
+	public int getRowCount() {
+		// TODO Auto-generated method stub
+		return content.length;
+	}
+
+	public Object getValueAt(int row, int col) {
+		// TODO Auto-generated method stub
+		return content[row][col];
+	}
+	public String getColumnName(int col){
+		return cols[col];
+	}
+	public boolean isCellEditable(int rowIndex,int columIndex){
+		return true;
+	}
+	public void setValueAt(Object value,int row,int col){
+		content[row][col]=value;
+		fireTableCellUpdated(row,col);
+		
+	}
+	public Class getColumnClass(int colIndex){
+		return getValueAt(0,colIndex).getClass();
+	}
+
+
+	
+}

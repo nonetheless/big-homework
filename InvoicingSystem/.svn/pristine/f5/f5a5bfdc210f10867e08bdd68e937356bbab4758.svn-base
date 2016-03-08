@@ -1,0 +1,717 @@
+package businesslogic.commoditybl;
+
+import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+
+import dataservice.commoditydataservice.CommodityDataService;
+import po.BillPO;
+import po.CommodityPo;
+import po.Ex_StockPo;
+import po.PkgPO;
+import po.StockBillsPo;
+import po.infoPO;
+import vo.CommodityVo;
+import vo.Ex_StockVo;
+import vo.MarketCommodityVO;
+import vo.PkgVO;
+import vo.StockBillsVo;
+import vo.infoVO;
+import businesslogic.billmanagementbl.SendBillToManager;
+import businesslogic.kindbl.ChangeFromComd;
+import businesslogic.kindbl.KindOperator;
+
+
+
+
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+
+import javax.swing.JTable;
+
+import main.IPAddress;
+
+
+public class CommodityOperator implements CommodityProvider,ChangeFromKind{
+ 
+    
+    CommodityDataService comdData;
+    SendBillToManager sendBill=new SendBillToManager();
+    
+    public CommodityOperator(){
+    	String ip=IPAddress.ip;
+    	try{
+    		comdData=(CommodityDataService)Naming.lookup("rmi://"+ip+":8028/comdData");
+    	
+    	}catch(MalformedURLException e) {
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			e.printStackTrace();
+		}
+    	
+    }
+ 
+	public int addCommodity(CommodityVo comdVo) {
+       	int loc=findCommodity(comdVo.get_nameOfCommodity());
+        
+       	ChangeFromComd changKind=new KindOperator();
+       	 
+       	CommodityPo tempPo=new CommodityPo(comdVo.get_kindName(),comdVo.get_numOfKind(),
+       			 comdVo.get_nameOfCommodity(),comdVo.get_modelNum(),comdVo.get_numOfStock(),
+       			 comdVo.get_avg_price(),comdVo.get_inprice(),comdVo.get_outPrice(),comdVo.get_latestInPrice(),
+       			 comdVo.get_latestOutPrice(),comdVo.get_batch(),comdVo.get_batch_Num(),comdVo.get_ex_date(),comdVo.get_storeHouse(),
+       			 comdVo.get_alarmNum());
+       	 
+		if(loc>=0)
+			 return -1;//该商品已经存在
+		else
+		{
+       	     try
+       	     {
+       	     changKind.addCommodityToKind(comdVo.get_kindName(),comdVo.get_numOfKind(), comdVo.get_nameOfCommodity());
+			 comdData.addCommodity(tempPo);
+		     }catch (RemoteException e){
+		     
+		     e.printStackTrace();
+		     }
+       	     
+       	     return 1;
+		}
+}
+
+	public int delCommodity(String name) {
+	   int loc=findCommodity(name);
+	   int result=-1;
+		
+	   if(loc>=0)
+		   try{
+			   result=comdData.delCommodity(loc);
+		   }catch (RemoteException e){
+			   e.printStackTrace();
+		   }
+		
+        if(loc>=0)
+        {
+		   ChangeFromComd cfc=new KindOperator();
+		   cfc.delCommodityToKind(name);
+		}
+		return result;
+    }
+	
+ 
+	
+	public int changeCommodity(CommodityVo comdVo) {
+		int loc=findCommodity_ByNum(comdVo.get_numOfKind());
+	    int result=-1;
+	  	
+	  	if(loc>=0){
+			try{
+			    CommodityPo oldPo=comdData.getOneCommodity(loc);
+			    String oldName=oldPo.get_nameOfCommodity();
+	            CommodityPo tempPO=new CommodityPo(comdVo.get_kindName(),comdVo.get_numOfKind(),
+		      			 comdVo.get_nameOfCommodity(),comdVo.get_modelNum(),comdVo.get_numOfStock(),
+		      			 comdVo.get_avg_price(),comdVo.get_inprice(),comdVo.get_outPrice(),comdVo.get_latestInPrice(),
+		      			 comdVo.get_latestOutPrice(),comdVo.get_batch(),comdVo.get_batch_Num(),comdVo.get_ex_date(),comdVo.get_storeHouse(),
+		      			 comdVo.get_alarmNum());
+				result=comdData.changeCommodity(tempPO,loc);
+				
+				ChangeFromComd cfk=new KindOperator();
+				cfk.changeCommodityName(oldName,comdVo.get_nameOfCommodity());
+			 }catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	/*
+	 * changeComdKindName方法，被kind模块调用，修改商品的名称
+	 */
+	
+	public void changeComdKindName(String oldName, String newName) {
+	   try{
+			comdData.updateCommodity_Kind(oldName, newName);
+		   }catch (RemoteException e) {
+			 e.printStackTrace();
+		   }
+	}
+
+	public int findCommodity(String name) {
+		
+	    int result=-1;
+	    try {
+	       result=comdData.findCommodity(name);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    return result;
+		
+	}
+	
+    public int findCommodity_ByNum(String kindNum){
+		int result=-1;
+	    ArrayList<CommodityVo> tempList=getAllCommoditys();
+	    int length=tempList.size();
+	    for(int i=0;i<length;i++){
+	    	CommodityVo tempVo=tempList.get(i);
+	    	if(tempVo.get_numOfKind().equals(kindNum))
+	    	result=i;
+	    }
+	    return result;
+		
+	}
+	
+   /*12.07
+	 * 用于模糊查找，三种方式，分别使用三个实现了Search接口的类，SearchByName,SearchByKindName,
+	 * SearchByKindNum
+	 * @author:hc
+	*/
+    public ArrayList<CommodityVo> search(SearchType type, String info) {
+		// TODO Auto-generated method stub
+		Search search = null;
+		ArrayList<CommodityVo> resultList=new ArrayList<CommodityVo>();
+		ArrayList<CommodityVo> allComdList=getAllCommoditys();
+		
+		if(type.get_way().equals("name")){
+			search=new SearchByComdName(info);
+			
+		}
+		else if(type.get_way().equals("kindName")){
+			search=new SearchByKindName(info);
+	
+		}
+		else if(type.get_way().equals("kindNum")){
+			search=new SearchByKindNum(info);
+			
+		}
+		resultList=search.searchBySomeWay(allComdList);
+		
+		return resultList;
+	}
+    
+	public ArrayList<CommodityVo> getCommoditys(String name) {
+		ArrayList<CommodityPo> tempArr=new ArrayList<CommodityPo>();
+		try {
+			tempArr=comdData.getCommoditys(name);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		ArrayList<CommodityVo> list=new ArrayList<CommodityVo>();
+		int length=tempArr.size();
+		
+		if(tempArr.size()!=0){
+			for(int i=0;i<length;i++)
+			list.add(i, new CommodityVo(tempArr.get(i)));
+			
+			
+		}
+	
+		return list;
+	}//通过商品名称获得商品
+    
+	public ArrayList<CommodityVo> getAllCommoditys() {
+		// TODO Auto-generated method stub
+		ArrayList<CommodityPo> tempList=new ArrayList<CommodityPo>();
+		
+	    try{
+			 tempList=comdData.getAllCommoditys();
+		}catch(RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	     
+	    int length=tempList.size();
+	     
+	    ArrayList<CommodityVo> tempList02=new ArrayList<CommodityVo>(length);
+	     
+		for(int i=0;i<length;i++){
+			CommodityPo temp=tempList.get(i);
+			tempList02.add(i, new CommodityVo(temp.get_kindName(),temp.get_numOfKind(),temp.get_nameOfCommodity(),
+					temp.get_modelNum(),temp.get_numOfStock(),temp.get_avg_price()
+					,temp.get_inPrice(),temp.get_OutPrice(),temp.get_latestinPrice(),temp.get_latestoutPrice(),
+					temp.get_batch(),temp.get_batch_Num(),temp.get_ex_date(),temp.get_storeHouse(),temp.get_alarmNum()));
+		}
+		
+		return tempList02;
+	}
+    
+	public CommodityVo getCommodity(String kindNum) {
+		// TODO Auto-generated method stub
+		CommodityVo tempVo=null;
+		try {
+			 tempVo=new CommodityVo(comdData.getCommodity(kindNum));
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return tempVo;
+	}//通过类别编号获得匹配的商品
+
+	public ArrayList<CommodityVo> getCommoditys_ByKindName(String kindName) {
+		ArrayList<CommodityVo> tempVoList=new ArrayList<CommodityVo>();
+		ArrayList<CommodityPo> tempPoList=new ArrayList<CommodityPo>();
+		
+		try {
+				tempPoList=comdData.getCommoditys_ByKindName(kindName);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		int length=tempPoList.size();
+		
+		if(length==0)
+			return null;
+		else
+		{
+			for(int i=0;i<length;i++)
+				tempVoList.add(i, tempVoList.get(i));
+			
+			return tempVoList;
+		}
+	}
+	
+	
+	public Ex_StockVo examineStock(double beginTime, double endTime) {
+	    Ex_StockVo vo=null;
+		try {
+			Ex_StockPo temp=comdData.examineStock(beginTime, endTime);
+			vo=new Ex_StockVo(temp.get_outNum(),temp.get_outMoney(),temp.get_inNum(),temp.get_inMoney());
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return vo;
+	}
+
+	public int subStockBills(StockBillsVo vo) {
+		// TODO Auto-generated method stub
+		int result=0;
+		String time=getTime();
+		String id[]=time.split(";");
+		
+		vo.set_date(id[0]);
+		String parts[]=id[0].split("-");
+		String parts1[]=id[1].split(":");
+		vo.set_iden(parts[0]+parts[1]+parts[2]+parts1[0]+parts1[1]+parts1[2]);
+		
+	   try
+	   {
+		   StockBillsPo temp=new StockBillsPo(vo.get_type(),vo.getOperator(),
+					vo.get_date(),vo.get_commodity(),vo.get_modelNum(),vo.get_factualNum(),vo.get_iden(),vo.get_storeHouse());
+			result=comdData.addBill(temp);
+			SendBillToManager sendBiller=new SendBillToManager();
+			sendBiller.sendBill(temp, temp.getType());	
+		}catch (RemoteException e){
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public int subStockBills(int loc,int factNum){
+		CommodityPo temp=null;
+		try 
+		{
+			temp=comdData.getOneCommodity(loc);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		String type=null;
+		int currentNum=temp.get_numOfStock();
+		if(currentNum>factNum)
+			type="over";
+	    else if(currentNum<factNum)
+	    	type="loss";
+	    else if(currentNum==factNum)
+	    	return -1;
+		
+		String time=getTime();
+		String id[]=time.split(";");
+	    String date=id[0];
+		String parts[]=id[0].split("-");
+		String parts1[]=id[1].split(":");
+		
+		String iden=parts[0]+parts[1]+parts[2]+parts1[0]+parts1[1]+parts1[2];
+		
+		StockBillsPo po=new StockBillsPo(type,"库存管理员",date,temp.get_nameOfCommodity()
+				,temp.get_modelNum(),factNum,iden,temp.get_storeHouse());
+	
+		try {
+			comdData.addBill(po);
+			SendBillToManager sendBiller=new SendBillToManager();
+			sendBiller.sendBill(po, po.getType());
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return 1;
+}
+	
+    public ArrayList<StockBillsVo> checkAlarm(){
+		ArrayList<StockBillsPo> list=null;
+		try {
+			list=comdData.getAlarm();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		int length=list.size();
+		if(length==0)
+			return null;
+		
+		else
+		{
+			ArrayList<StockBillsVo> resultList=new ArrayList<StockBillsVo>();
+			for(int i=0;i<length;i++)
+			{
+				StockBillsPo tempPo=list.get(i);
+				StockBillsVo tempVo=new StockBillsVo(tempPo.getType(),tempPo.getIdentifier(),tempPo.get_date(),
+						null,tempPo.getCommodityName(),tempPo.get_ModelNum(),tempPo.getFactualNum(),
+						tempPo.get_storeHouse());
+				tempVo.setOperator("库存管理员");
+				this.subStockBills(tempVo);
+				System.out.println("tempVo的Op是"+tempVo.getOperator());
+				resultList.add(tempVo);
+			}
+			
+		return resultList;
+		}
+    }
+	
+	public CommodityVo getOneCommodity(int loc){
+	    	try {
+				CommodityPo temp=comdData.getOneCommodity(loc);
+				CommodityVo resultVo=new CommodityVo(temp.get_kindName(),temp.get_numOfKind(),
+						temp.get_nameOfCommodity(),temp.get_modelNum(),temp.get_numOfStock(),
+						temp.get_avg_price(),temp.get_inPrice(),temp.get_OutPrice(),temp.get_latestinPrice(),
+						temp.get_latestoutPrice(),temp.get_batch(),temp.get_batch_Num(),temp.get_ex_date(),
+						temp.get_storeHouse(),temp.get_alarmNum());
+				return resultVo;
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	return null;
+	    }
+	
+    public ArrayList<BillPO> getBills(infoVO vo) {
+		// TODO Auto-generated method stub
+		ArrayList<BillPO> potempArr=new ArrayList<BillPO>();
+		infoPO tempInfo=new infoPO(vo.gettime1(),vo.gettime2(),vo.getgoods(),vo.getcustomer(),
+				vo.getoprator(),vo.getstorehouse(),vo.getbilltype());
+		try 
+		{
+			potempArr=comdData.getBills(tempInfo);
+		}catch (RemoteException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	   
+		return potempArr;
+	}
+
+    public int addPkg(PkgVO vo) {
+		// TODO Auto-generated method stub
+	     PkgPO tempPo=new PkgPO(vo.getId(),vo.getName(),vo.getPkg(),vo.getAftPrice());
+
+	     int addResult=-1;
+   	
+	        try 
+	        {
+				addResult=comdData.addPkg(tempPo);
+			}catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	 
+	    return addResult;
+	}
+
+	public int delPkg(PkgVO vo) {
+	  PkgPO tempPo=new PkgPO(vo.getId(),vo.getName(),vo.getPkg(),vo.getAftPrice());
+	      int searchResult=0;
+		  int delResult=-1;
+		  try {
+				 searchResult=comdData.findPkg(tempPo);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		   if(searchResult==1){
+		    	 try {
+					delResult=comdData.delPkg(tempPo);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    	 
+		    }
+		
+		
+		return delResult;
+	}
+
+	public int delPkg(String id) {
+		// TODO Auto-generated method stub
+		int loc=findPkg(id);
+		if(loc>=0){
+		try {
+			comdData.delPkg(loc);
+			return 1;
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		}
+		
+		return -1;
+	}
+	
+	public int changePkg(PkgVO vo) {
+		  PkgPO tempPo=new PkgPO(vo.getId(),vo.getName(),vo.getPkg(),vo.getAftPrice());
+	      int searchResult=-1;
+		  int changeResult=-1;
+		  try {
+			  searchResult=comdData.findPkg_byId(vo.getId());
+			  }catch(RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			  }
+		  
+		  if(searchResult>=0)
+		  {
+		     try {
+				  changeResult=comdData.changePkg(searchResult, tempPo);
+				 }catch (RemoteException e){
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				 }
+		  }
+		
+   		return changeResult;
+	}
+
+	public ArrayList<PkgVO> getAllPkgs(){
+		// TODO Auto-generated method stub
+		ArrayList<PkgVO> voList=new ArrayList<PkgVO>();
+		ArrayList<PkgPO> poList=null;
+		try 
+		{
+			 poList=comdData.getAllPkgs();
+		}catch (RemoteException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(poList!=null)
+		{
+			int length=poList.size();
+			for(int i=0;i<length;i++)
+			{
+				PkgPO tempPO=poList.get(i);
+				PkgVO tempVo=new PkgVO(tempPO.getId(),tempPO.getName(),tempPO.getPkg(),
+						tempPO.getAftPrice());
+				voList.add(i,tempVo);
+			}
+			
+			return voList;
+		}
+		
+		return null;
+	}
+	public int findPkg(PkgVO vo) {
+		// TODO Auto-generated method stub
+		PkgPO tempPO=new PkgPO(vo.getId(),vo.getName(),vo.getPkg(),vo.getAftPrice());
+		int result=-1;
+		
+		try {
+			result=comdData.findPkg(tempPO);
+		    }
+		catch (RemoteException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
+	}
+	
+	public int findPkg(String id) {
+		// TODO Auto-generated method stub
+		int result=-1;
+		try {
+			result=comdData.findPkg_byId(id);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
+	public PkgVO get_Pkg(String id) {
+			// TODO Auto-generated method stub
+			PkgPO  pkgPo=null;
+			try 
+			{
+			   pkgPo=comdData.getPkg(id);
+			}catch (RemoteException e){
+				// TODO Auto-generated catch block
+			   e.printStackTrace();
+			}
+			if(pkgPo!=null)
+			  return  new PkgVO(pkgPo.getId(),pkgPo.getName(),pkgPo.getPkg(),pkgPo.getAftPrice());
+			else 
+			  return null;
+		}
+	
+	
+	/*changeStock方法，是Sales模块调用改变库存的。
+	 * 每次被调用都将留下ser记录
+	 */
+	public String changeStock(String kindNum, int number, double inPrice,double outPrice){
+		String result=null;
+		
+		try {
+			result=comdData.changeStock(kindNum, number, inPrice, outPrice);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		return result;
+	}
+    
+	
+	
+	/*
+     * MarketFind方法，根据一个编号，获得符合该编号商品的数量，名称，类别名称，进价，售价
+     * 返回MarketCommodityVO包含以上要素 
+     */
+	public MarketCommodityVO MarketFind(String numberOfkind) {
+		// TODO Auto-generated method stub
+		//CommodityVo tempVo=null;
+		CommodityPo tempPo=null;
+		MarketCommodityVO result=null;
+		try 
+		{
+		   tempPo=comdData.MarketFind(numberOfkind);
+		}catch (RemoteException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(tempPo!=null)
+		{
+		   result=new MarketCommodityVO(tempPo.get_numOfKind(),tempPo.get_nameOfCommodity(),
+					tempPo.get_kindName(),tempPo.get_numOfStock(),tempPo.get_inPrice(),tempPo.get_OutPrice());
+		   return result;
+		}
+		
+		return null;
+	}
+	
+    public int exportAsXls(JTable table){
+	    ExlMaker em=new ExlMaker();
+	    String time=getTime();
+	    String part[]=time.split(";");
+	    String part1[]=part[0].split("-");
+	    String part2[]=part[1].split(":");
+	    time=part1[0]+part1[1]+part1[2]+part2[0]+part2[1]+part2[2];
+	    
+	    try 
+	    {
+			em.make_exl(table, time);
+	    }catch (IOException e)
+	    {
+			// TODO Auto-generated catch block
+		  e.printStackTrace();
+		  return -1;
+		}
+		
+	    return 1;
+	}
+
+    public String sendGift(ArrayList<CommodityVo> arr, String customName,
+    		String customId, int money, int number) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private String getTime(){
+	    	Date d=new Date();
+	    	SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd;kk:mm:ss");
+	    	String str=sdf.format(d);
+	    	return str;
+	    }
+	
+/* delCommodityByKindName方法，被kind模块调用删除属于kindName类别的商品，
+ * 以保证库存的商品信息和分类树中的一致
+ */
+    public void delCommodityByKindName(String kindName) {
+		// TODO Auto-generated method stub
+	    try 
+	     {
+		   comdData.delCommodityByKindName(kindName);
+		 }catch (RemoteException e)
+		 {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		 }
+	}
+/*
+ * 用于kind模块调用，当管理员在kind模块中删除某个商品时，调用此方法对被删除的商品进行更新
+ */
+
+	public void delCommodityByName(String comdName) {
+		// TODO Auto-generated method stub]
+		    try 
+		    {
+			   comdData.delCommodityByName(comdName);
+			}catch (RemoteException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+   
+	
+	/*
+	 *init()用于清空库存数据
+	 */
+	public void init(){
+		try{
+			comdData.init();
+		   }
+		catch(RemoteException e)
+		   {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		   }
+	}
+	
+	/*
+	 * initKind方法,用于清空分类树中的数据，以便保持数据的一致性
+	 */
+	public void initKind(){
+		ChangeFromComd cfc=new KindOperator();
+		cfc.init();
+	}
+	
+	
+	
+	
+
+}

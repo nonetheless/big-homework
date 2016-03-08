@@ -1,0 +1,14 @@
+package businesslogic.kindbl;
+
+import java.util.ArrayList;
+
+import po.KindPo;
+import vo.KindInfoVO;
+import vo.KindVo;
+
+public interface KindProvider {
+//public ArrayList<KindPo> getSons(KindPo po);
+public KindPo getWholeTree();
+public KindInfoVO get_Sons(String name);
+public String getFather(String name);
+}

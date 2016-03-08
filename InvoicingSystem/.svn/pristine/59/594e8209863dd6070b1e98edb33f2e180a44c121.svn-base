@@ -1,0 +1,131 @@
+package businesslogic.marketbl;
+
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+import dataservice.marketdataservice.MarketDataService;
+import businesslogic.memberbl.Member;
+import businesslogic.promotionbl.SalesPromotion;
+import po.BillPO;
+import po.GoodsListPO;
+import po.MarketListPO;
+import po.SaleListPO;
+import po.StackListPO;
+import po.UnsaleListPO;
+import po.UnstackListPO;
+import vo.InformationVO;
+import vo.MemberVO;
+import vo.ProinfoVO;
+
+public class Unsale extends Unity{
+	private double dic;
+
+	public Unsale(InformationVO info) {
+		// TODO Auto-generated constructor stub
+		super(info);
+		kind = "XSTHD";
+		
+	}
+
+	@Override
+	protected BillPO getPO(GoodsListPO x) {
+		//根据Goodslist生成的PO
+		String id = getId(kind);
+		UnsaleListPO bill= new UnsaleListPO(x,id,memberId,saler,house,
+				other,dic,user,memberName);
+		return bill;
+	}
+
+	public String unDiscount(boolean m, double x) {
+		// 是否接受退货
+		if(m==true){
+			return "success";
+		}
+		dic = calRedu(x);
+		if(dic >0){
+			return "success";
+		}
+		return "no_unsale";
+	}
+
+	private double calRedu(double x) {
+		//计算退货金额
+		int mlevel = getMemberLevel(memberId,memberName);
+		SalesPromotion m = new SalesPromotion();
+		ProinfoVO t = m.getPromotion(x, mlevel);
+		double rr = 0;
+		if(Userlevel==1){
+			rr = L1;
+		}
+		else{
+			rr =L2;
+		}
+		if(t==null){
+			return x - rr;
+		}
+		double price = x - t.getDiscount()-t.getNum()*t.getPaper() - rr;
+		return price;
+	}
+	
+	private int getMemberLevel(String memberId, String memberName) {
+		//获取Member等级
+		Member m = new Member();
+		ArrayList<MemberVO> vo = m.findmember(memberName, memberId);
+		if(vo.size()==1){
+			MemberVO tem = vo.get(0);
+			return tem.getLevel();
+		}
+		return -1;
+	}
+
+	@Override
+	protected String store(MarketListPO x,int ok) {
+		//存入数据层
+				MarketDataService m;
+				try {
+					m = (MarketDataService)Naming.lookup("rmi://"+ip+":8888/MarketData");
+					UnsaleListPO xx = (UnsaleListPO)x;
+					return m.insertUnsale(xx,ok) ;
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NotBoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return "false";
+	}
+
+	@Override
+	public ArrayList<UnsaleListPO> find(String start, String end, String thingid,
+			String memberid2, String salerid, String house2) {
+		ArrayList<UnsaleListPO> m = new ArrayList<UnsaleListPO>();
+		MarketDataService ms;
+		try {
+			ms = (MarketDataService)Naming.lookup("rmi://"+ip+":8888/MarketData");
+			ArrayList<UnsaleListPO> nn = ms.findUnsale(start, end, thingid, memberid2, salerid, house2);
+			for(int i=0;i<nn.size();i++){
+				m.add(nn.get(i));
+			}
+			return m;
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NotBoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+}

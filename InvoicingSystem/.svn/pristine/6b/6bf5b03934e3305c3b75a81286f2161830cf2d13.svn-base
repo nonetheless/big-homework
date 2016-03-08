@@ -1,0 +1,394 @@
+package presentation.userui;
+
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Label;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import presentation.loginui.LoginUI;
+import businesslogic.userbl.UserController;
+import businesslogicservice.userblservice.UserblService;
+import uiField.StringField;
+import uiTable.TableFactory;
+import vo.UserVo;
+
+public class UserUI {
+  private JFrame frame;
+  private JComboBox<String> statusBox;
+  private JTextField nameField;
+  private JTextField idField;
+  private JTextField passWordField;
+  private JComboBox  levelBox;
+  private JButton infoButton;
+  private JScrollPane tablePane;
+  private JButton ensureButton;
+  private JTable userTable;
+  DefaultTableModel tableModel;
+  
+  
+  JPanel ensurePanel;
+  JPanel infoPanel;
+  
+  UserblService usbl=new UserController();
+  
+  int compWidth=100;
+  int compHeight=40;
+  
+  int wDistant=120;
+  int hDistant=50;
+  int width=1000;
+  int height=600;
+  String state=null;
+  
+  public UserUI(String adminName){
+	  frame=new JFrame();
+	  Toolkit tool=Toolkit.getDefaultToolkit();
+	  Dimension dm=tool.getScreenSize();
+	    
+	  
+	  frame.setBounds(dm.width/2-width/2,dm.height/2-height/2 , width, height);
+	  frame.setTitle("用户管理");
+	  frame.setLayout(null);
+	  
+	  JMenuBar menuBar=new JMenuBar();
+	  JMenu menu=new JMenu("操作");
+	  JMenuItem addItem=new JMenuItem("新增用户");
+	  addItem.addActionListener(new ActionListener(){
+
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			openField();
+			ensurePanel.setVisible(false);
+			state="ADD";
+			ensurePanel.setVisible(false);
+		}
+		  
+	  });
+	  
+	  JMenuItem delItem=new JMenuItem("删除用户");
+	  delItem.addActionListener(new delItemListener());
+	  JMenuItem changeItem=new JMenuItem("更改用户信息");
+	  changeItem.addActionListener(new ActionListener(){
+
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			openField();
+			ensurePanel.setVisible(true);
+			state="CHANGE";
+			ensurePanel.setVisible(false);
+		}
+		  
+	  });
+	  
+	  JMenuItem backItem=new JMenuItem("返回主菜单");
+	  backItem.addActionListener(new ActionListener(){
+
+		public void actionPerformed(ActionEvent arg0) {
+			// TODO Auto-generated method stub
+			frame.dispose();
+			new LoginUI();
+		}
+		  
+	  });
+	  
+	  
+	  
+	  menu.add(addItem);
+	  menu.add(delItem);
+	  menu.add(changeItem);
+	  menu.add(backItem);
+	  menuBar.add(menu);
+	  
+	  menuBar.setBounds(0, 0, width, 40);
+	  
+	  
+	  infoPanel=new JPanel();
+	  infoPanel.setLayout(null);
+	  infoPanel.setBounds(0, 40, width, height/6);
+	  
+	
+	  
+	  JLabel statusLabel=new JLabel("身份",JLabel.CENTER);
+	  statusLabel.setBounds(0,0,compWidth,compHeight);
+	  
+	  String[] status={"系统管理员","库存管理员","财务人员","销售人员","总经理"};
+	  statusBox=new JComboBox<String>(status);
+	  statusBox.setBounds(wDistant,0,compWidth, compHeight);
+	  
+	  JLabel nameLabel=new JLabel("姓名",JLabel.CENTER);
+	  nameLabel.setBounds(0, hDistant, compWidth,compHeight);
+	  nameField=new StringField();
+	  nameField.setBounds(wDistant, hDistant, compWidth, compHeight);
+	  
+	  
+	  JLabel idLabel=new JLabel("ID",JLabel.CENTER);
+	  idLabel.setBounds(3*wDistant-30, 0, compWidth, compHeight);
+	  idField=new StringField();
+	  idField.setBounds(4*wDistant-30, 0, compWidth, compHeight);
+	  
+	  JLabel passWordLabel=new JLabel("密码",JLabel.CENTER);
+	  passWordLabel.setBounds(3*wDistant-30, hDistant, compWidth, compHeight);
+      passWordField=new StringField();
+      passWordField.setBounds(4*wDistant-30, hDistant, compWidth, compHeight);
+      
+      JLabel levelLabel=new JLabel("等级",JLabel.CENTER);
+      levelLabel.setBounds(6*wDistant-60, 0, compWidth, compHeight);
+      
+      String[] level={"1","2","3","4","5","6","7","8","9","10"};
+      levelBox=new JComboBox(level);
+      levelBox.setBounds(7*wDistant-60, 0, compWidth, compHeight);
+      
+      infoButton=new JButton("确认");
+      infoButton.setBounds(6*wDistant-30, hDistant, compWidth*2, compHeight);
+      infoButton.addActionListener(new infoButtonListener());
+      
+      
+      infoPanel.add(statusLabel);
+      infoPanel.add(statusBox);
+      infoPanel.add(nameLabel);
+      infoPanel.add(nameField);
+      infoPanel.add(idLabel);
+      infoPanel.add(idField);
+      infoPanel.add(passWordLabel);
+      infoPanel.add(passWordField);
+      infoPanel.add(levelLabel);
+      infoPanel.add(levelBox);
+      infoPanel.add(infoButton);
+      
+      tablePane=new JScrollPane();
+      tablePane.setBounds(0,3*hDistant,width,height/2);
+      tablePane.setVisible(false);
+      
+      showTable();
+      
+      
+      ensurePanel=new JPanel();
+      ensurePanel.setLayout(null);
+      ensurePanel.setBounds(0, 2*hDistant+2*height/3, width, height/6);
+      ensureButton=new JButton("确认删除");
+      ensureButton.setBounds(width/3, height/50, width/3, compHeight);
+      ensureButton.addActionListener(new DelButtonListener());
+      
+   
+      ensurePanel.add(ensureButton);     
+      ensurePanel.setVisible(false);
+      
+      
+      frame.add(menuBar);
+      frame.add(infoPanel);
+      frame.add(tablePane);
+      frame.add(ensurePanel);
+      frame.setVisible(true);
+      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      
+ }
+  public static void main(String args[]){
+	  UserUI ui=new UserUI(null);
+	 }
+  class infoButtonListener implements ActionListener{
+
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+		 String status=(String)statusBox.getSelectedItem();
+		 String name=nameField.getText();
+		 String id=idField.getText();
+		 String passWord=passWordField.getText();
+		 String level=(String)levelBox.getSelectedItem();
+		if(state!=null){
+		if(state.equals("ADD")){
+		
+		if(isValid(name,id,passWord)){
+			int result=usbl.addUser(new UserVo(status,name,id,passWord,Integer.parseInt(level)));
+			if(result==1){
+			JOptionPane.showMessageDialog(frame, "添加用户成功");
+			String data[]={status,name,id,passWord,String.valueOf(level)};
+			tableModel.addRow(data);
+			}
+			else
+			JOptionPane.showMessageDialog(frame,"该用户id已经存在，添加失败");
+		}
+		else
+		JOptionPane.showMessageDialog(frame, "信息不足,添加失败");
+		}
+		if(state.equals("CHANGE")){
+			int row=userTable.getSelectedRow();
+			
+			
+		    if(row!=-1&&isValid(name,id,passWord)){
+			
+			  String st=(String)userTable.getValueAt(row, 0);
+			  boolean b1=st.equals("系统管理员")&&(get_num_admin()==1)&&(!status.equals("系统管理员"));
+			    if(b1)
+			        JOptionPane.showMessageDialog(frame, "不能修改最后一名管理员的身份");	
+				
+			    else{	
+			       usbl.changeUser(new UserVo(status,name,id,passWord,Integer.parseInt(level)), row);
+			       JOptionPane.showMessageDialog(frame, "用户信息已经更新");
+			       userTable.setValueAt(status, row, 0);
+			       userTable.setValueAt(name, row, 1);
+			       userTable.setValueAt(id, row, 2);
+			       userTable.setValueAt(passWord, row, 3);
+			       userTable.setValueAt(level, row, 4);
+			}
+		    }
+		    if(!isValid(name,id,passWord))
+			JOptionPane.showMessageDialog(frame, "用户信息不足");	
+		    if(row==-1)
+			JOptionPane.showMessageDialog(frame, "请选择要修改的信息项目");	
+		}
+		
+		
+		}
+		else
+			JOptionPane.showMessageDialog(frame, "请在menu中选择要进行的操作");	
+		
+		
+	}
+	  
+  }
+  
+  /*isValid()方法：判断name,id,password的输入是否有效
+   *有效返回true，无效返回false; 
+   */
+  private boolean isValid(String name,String passWord,String id){
+	
+	 boolean b1=name.equals("");
+	 boolean b2=id.equals("");
+	 boolean b3=passWord.equals("");
+	 if(b1||b2||b3)
+		 return false;
+	 else
+		 return true;
+ }
+   
+   
+  class delItemListener implements ActionListener{
+
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+	//	showTable();
+	    closeField();
+	    ensurePanel.setVisible(true);
+		}
+	  
+  }
+  private void showTable(){
+	    tableModel=TableFactory.getUserTable(usbl.getAllUsers());
+		userTable=new JTable(tableModel);
+        userTable.addMouseListener(new tableListener());
+		tablePane=new JScrollPane(userTable);
+		tablePane.setBounds(0,hDistant*3,width,height/2);
+		frame.getContentPane().add(tablePane);
+		tablePane.repaint();
+		tablePane.setVisible(true);
+  }
+  
+  private void closeField(){
+	  statusBox.setEnabled(false);
+	  nameField.setEditable(false);
+	  idField.setEditable(false);
+	  passWordField.setEditable(false);
+	  levelBox.setEnabled(false);
+	  
+	  
+  }
+  
+  
+  private void openField(){
+	  statusBox.setEnabled(true);
+	  nameField.setEditable(true);
+	  idField.setEditable(true);
+	  passWordField.setEditable(true);
+	  levelBox.setEnabled(true);
+  }
+  
+  
+  
+  
+  class tableListener extends MouseAdapter{
+	  public void mouseClicked(MouseEvent e){
+		  int row=userTable.getSelectedRow();
+		  System.out.println(row);
+		  String status=(String)userTable.getValueAt(row, 0);
+		  String name=(String)userTable.getValueAt(row, 1);
+		  String id=(String)userTable.getValueAt(row, 2);
+		  String passWord=(String)userTable.getValueAt(row, 3);
+		  String level=(String)userTable.getValueAt(row, 4);
+		  showUserInfo(status,name,id,passWord,level);
+	  }
+	  
+  }
+  
+  
+ private void showUserInfo(String st,String name,String id,String pass,String level){
+	 statusBox.setSelectedItem(st);
+	 nameField.setText(name);
+	 idField.setText(id);
+	 passWordField.setText(pass);
+	 levelBox.setSelectedItem(level);
+	}
+  
+  class DelButtonListener implements ActionListener{
+
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		int row=userTable.getSelectedRow();
+		if(row>=0){
+		String status=(String)userTable.getValueAt(row, 0);	
+		if(status.equals("系统管理员")){
+		int numofAdmin=get_num_admin();
+		if(numofAdmin==1)
+		JOptionPane.showMessageDialog(frame, "不能删除最后一名系统管理员");
+		else{
+			tableModel.removeRow(row);
+			usbl.delUser(row);
+		}
+		}
+		else{	
+		tableModel.removeRow(row);
+		usbl.delUser(row);
+		}
+		
+		}
+		else
+		JOptionPane.showMessageDialog(frame, "请选择要删除的用户");
+	}
+  }
+
+
+private int get_num_admin(){
+	int num=0;
+	for(int i=0;i<userTable.getRowCount();i++){
+	String status=(String)userTable.getValueAt(i, 0);	
+	if(status.equals("系统管理员"))
+		num++;
+	}
+	return num;
+}
+
+
+
+
+
+
+}
+
+

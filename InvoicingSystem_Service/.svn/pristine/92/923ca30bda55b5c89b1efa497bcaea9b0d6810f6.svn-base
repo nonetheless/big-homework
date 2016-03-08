@@ -1,0 +1,15 @@
+package RMI_Driver;
+
+import java.util.ArrayList;
+
+import po.PayinPO;
+import dataservice.paymentdataservice.paymentindataservice;
+
+public class paymentindataservice_driver {
+	public void run(paymentindataservice s){
+		
+		
+		
+	}
+
+}

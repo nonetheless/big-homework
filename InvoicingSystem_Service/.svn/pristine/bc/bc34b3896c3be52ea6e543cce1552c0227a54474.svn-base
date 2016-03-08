@@ -1,0 +1,16 @@
+package RMI_Driver;
+
+import po.creatPO;
+import dataservice.accountinidataservice.accountinidataservice;
+
+public class accountinidataservice_driver {
+	public void run(accountinidataservice s){
+		creatPO p=s.find(1);
+		System.out.println(p);
+		int i=s.store(null);
+		if(i==1)
+		{System.out.println("success");
+			}
+		}
+
+}

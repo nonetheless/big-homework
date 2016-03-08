@@ -1,0 +1,176 @@
+package businesslogic.marketbl;
+/*
+ * @ggg
+ * Market端的领域模型
+ */
+import java.util.ArrayList;
+
+import businesslogic.commoditybl.CommodityOperator;
+import businesslogic.kindbl.KindOperator;
+import po.GoodsListPO;
+import vo.BuyingVO;
+import vo.BuyingsVO;
+import vo.InformationVO;
+import vo.KindInfoVO;
+import vo.ListVO;
+import vo.MarketCommodityVO;
+import vo.PromotionListVO;
+
+public class Market{
+	Unity uni;
+	GoodsList list;
+	int numkind;
+	final int SALE = 1;
+	final int UNSALE =2;
+	final int STACK =3;
+	final int UNSTACK =4;
+	public Market(){
+		list = new GoodsList();
+	}
+
+	public String inputinf(InformationVO info) {
+		// 获取信息后创建对象
+		uni = changeKind(info);
+		numkind = info.getKind();
+		return "success";
+	}
+
+	private Unity changeKind(InformationVO info) {
+		// 通过输入建立不同的领域模型
+		/*
+		 * 控制耦合
+		 * 1 sale
+		 * 2 unsale
+		 * 3 stack
+		 * 4 unstack
+		 */
+		Unity te = null;
+		switch(info.getKind()){
+		case SALE:
+			te = new Sale(info);
+			break;
+		case UNSALE:
+			te = new Unsale(info);
+			break;
+		case STACK:
+			te = new Stack(info);
+			break;
+		case UNSTACK:
+			te = new Unstack(info);
+			break;
+			
+		}
+		return te;
+	}
+
+	public String listadd(String commodity, double value, int number) {
+		// 向购物车中添加商品
+		
+		return list.listadd(commodity,value,number);
+	}
+
+	public String listdel(String commodity, double value, int number) {
+		// 删除购物车中的商品，不会出现删除没有的
+		return list.listdel(commodity, value, number);
+	}
+
+	public String listupd(String commodity, double value, int number) {
+		// 更新购物车中的商品
+		
+		return list.upd(commodity,value,number);
+	}
+
+	public ListVO listshow() {
+		// 查看购物车
+		return list.show();
+	}
+
+	public BuyingsVO listenter(String commodity) {
+		//点击进入得到商品和kind
+		KindOperator x = new KindOperator();
+		KindInfoVO temp = x.get_Sons(commodity);
+		BuyingsVO y = kindToBuying(temp);
+		return y;
+	}
+
+	private BuyingsVO kindToBuying(KindInfoVO temp) {
+		// 将kind变为buyings
+		ArrayList<String> kind = temp.getKind();
+		ArrayList<String> id = temp.getCommodityId();
+		ArrayList<BuyingVO> m = new ArrayList<BuyingVO>();
+		CommodityOperator x = new CommodityOperator();
+		if(id!=null){
+		for(int i=0;i<id.size();i++){
+			BuyingVO te = inCreate(x.MarketFind(id.get(i)));
+			m.add(te);
+		}
+		}
+		BuyingsVO end = new BuyingsVO(m,kind); 
+		return end;
+	}
+
+	private BuyingVO inCreate(MarketCommodityVO find) {
+		// 批量生产BuyingsVO
+		double price;
+		if(numkind>=3){
+			price = find.getIn();
+		}
+		else{
+			price = find.getOut();
+		}
+		BuyingVO te = new BuyingVO(find.getId(),find.getName(),find.getKind(),price,find.getNum());
+		return te;
+	}
+
+	public String reduce(double price) {
+		// 销售人员折扣
+		Sale m = (Sale)uni;
+		return m.reduce(price);
+	}
+
+	public PromotionListVO showFree() {
+		//显示赠品单
+		Sale m = (Sale) uni;
+		return m.showFree();
+	}
+
+	public String sure() {
+		// 确认单据，传给bill
+		GoodsListPO x= list.createPO();
+		System.out.println(x.getAllPrice()+"单据的价格");
+		return uni.sure(x);
+	}
+	
+	public double cal(){
+		return list.cal();
+	}
+
+
+	public String usePaper(int paper, int num) {
+		// 输入代金卷
+		Sale m = (Sale)uni;
+		return m.usePaper(paper,num);
+	}
+
+	public PromotionListVO getpro() {
+		// 获取优惠
+		Sale te = (Sale) uni;
+		GoodsListPO x= list.createPO();
+		return te.getpro(x.getAllPrice());
+	}
+
+	public String unsalediscount(boolean m) {
+		//销售退货
+		Unsale se = (Unsale) uni;
+		double x = list.cal();
+		return se.unDiscount(m,x);
+	}
+
+	public String kindBack(String string) {
+		// 返回上一层
+		KindOperator x = new KindOperator();
+		return x.getFather(string);
+	}
+	
+	
+}

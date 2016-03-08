@@ -1,0 +1,15 @@
+package businesslogic.loginbl;
+
+import vo.UserVo;
+import businesslogicservice.loginblservice.LoginBlService;
+
+public class LoginController implements LoginBlService {
+Login login=new Login();
+
+public UserVo login(UserVo vo) {
+	// TODO Auto-generated method stub
+	return login.login(vo);
+}
+
+	
+}

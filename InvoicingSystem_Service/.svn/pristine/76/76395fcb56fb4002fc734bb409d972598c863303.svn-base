@@ -1,0 +1,389 @@
+package rmi;
+
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import data.accountdata.accountdata;
+import data.billmanegementdata.BillDataController;
+import data.commoditydata.CommodityData;
+import data.kinddata.KindData;
+import data.loginData.LoginData;
+import data.marketdata.MarketDataControl;
+import data.memberdata.MemberDataControl;
+import data.mockData.MockData;
+import data.paymentdata.paymentcashdata;
+import data.paymentdata.paymentindata;
+import data.paymentdata.paymentoutdata;
+import data.promotiondata.TotalCouponDataController;
+import data.promotiondata.TotalGiftDataController;
+import data.promotiondata.TotalMethodDataController;
+import data.promotiondata.VipCouponDataController;
+import data.promotiondata.VipDiscountDataController;
+import data.promotiondata.VipGiftDataController;
+import data.promotiondata.VipMethodDataController;
+import data.userdata.UserData;
+import dataservice.accountdataservice.accountdataservice;
+import dataservice.billmanagementdataservice.BillManagementDataService;
+import dataservice.commoditydataservice.CommodityDataService;
+import dataservice.kinddataservice.KindDataService;
+import dataservice.loginDataService.LoginDataService;
+import dataservice.marketdataservice.MarketDataService;
+import dataservice.memberdataservice.MemberDataService;
+import dataservice.mockDataService.MockDataService;
+import dataservice.paymentdataservice.paymentcashdataservice;
+import dataservice.paymentdataservice.paymentindataservice;
+import dataservice.paymentdataservice.paymentoutdataservice;
+import dataservice.promotiondataservice.TotalCouponPromotionDataService;
+import dataservice.promotiondataservice.TotalGiftPromotionDataService;
+import dataservice.promotiondataservice.TotalPromotionMethodDataService;
+import dataservice.promotiondataservice.VipCouponPromotionDataService;
+import dataservice.promotiondataservice.VipDiscountPromotionDataService;
+import dataservice.promotiondataservice.VipGiftPromotionDataService;
+import dataservice.promotiondataservice.VipPromotionMethodDataService;
+import dataservice.userdataservice.UserDataService;
+
+public class SetUpFrame extends JFrame{
+	MemberDataControl rmem ; 
+	MarketDataControl mark ;
+	JButton start;
+	JButton end;
+	
+	String ip=null;
+	
+	private void get_IP(){
+		try {
+			ip=InetAddress.getLocalHost().getHostAddress();
+			JOptionPane.showMessageDialog(null, "服务器的ip："+ip);
+			
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+	
+	public SetUpFrame(){
+		super();
+		get_IP();
+		Toolkit tool= Toolkit.getDefaultToolkit();
+		Dimension scr = tool.getScreenSize();
+		int width = scr.width/5;
+		int height = scr.height/5;
+		this.setBounds(scr.width/2-width/2,scr.height/2-height/2 , width, height);
+		JPanel mainp = new JPanel();
+		start = new JButton("启动");
+		start.setEnabled(true);
+		end = new JButton("关闭");
+		end.setEnabled(false);
+		start.addActionListener(new Start());
+		end.addActionListener(new End(this));
+		mainp.add(start);
+		mainp.add(end);
+		this.add(mainp);
+		this.setLayout(null);
+		mainp.setBounds(0, 0, width, height);
+		this.setVisible(true);
+		this.addWindowListener(new Close(this));
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.repaint();
+	}
+	
+	class Close extends WindowAdapter{
+
+		JFrame x;
+		public Close(SetUpFrame s) {
+			// TODO Auto-generated constructor stub
+			x = s;
+		}
+
+        public void windowClosing(WindowEvent e) {
+			// TODO Auto-generated method stub
+			end();
+			System.out.println("i");
+		}
+
+		
+	}
+	
+	class Start implements ActionListener{
+
+		public void actionPerformed(ActionEvent e) {
+			// 启动rmi
+			if(start.isEnabled()){
+				setup();
+				end.setEnabled(true);
+				start.setEnabled(false);
+			}
+		}
+		
+	}
+	
+	class End implements ActionListener{
+		JFrame x;
+
+		public End(SetUpFrame s) {
+			x=s;
+		}
+
+		public void actionPerformed(ActionEvent e) {
+			// 保存为服务器文件
+			if(end.isEnabled()){
+			end();
+			System.out.println("ok");
+			System.exit(0);
+			}
+		}
+		
+	}
+	
+	private void end(){
+		mark.closeData();
+		rmem.closeData();
+	}
+	
+	private void setup(){
+		 try { 
+	            //创建一个远程对象 
+	            rmem = new MemberDataControl(); 
+	            mark = new MarketDataControl();
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8888); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:8888/MemberData",rmem); 
+	            Naming.bind("rmi://localhost:8888/MarketData", mark);
+	   
+	            System.out.println(">>>>>INFO:远程MemberData对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 try { 
+	            //创建一个远程对象 
+	            accountdataservice ac = new accountdata(); 
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8811); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:8811/accountdata",ac); 
+
+	            System.out.println(">>>>>INFO:远程accountdata对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 try { 
+	            //创建一个远程对象 
+	            CommodityDataService comdData=new CommodityData();
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8028); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            System.out.println("comdData创建完成");
+	            Naming.bind("rmi://localhost:8028/comdData",comdData); 
+
+	            System.out.println(">>>>>INFO:远程CommodityData对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 try { 
+	            //创建一个远程对象 
+	            paymentindataservice ac = new paymentindata(); 
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8812); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:8812/payindata",ac); 
+
+	            System.out.println(">>>>>INFO:远程payindata对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 try { 
+	            //创建一个远程对象 
+	            paymentoutdataservice ac = new paymentoutdata(); 
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8813); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:8813/payoutdata",ac); 
+
+	            System.out.println(">>>>>INFO:远程payoutdata对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 try { 
+	            //创建一个远程对象 
+	            paymentcashdataservice ac = new paymentcashdata(); 
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8822); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:8822/paycashdata",ac); 
+
+	            System.out.println(">>>>>INFO:远程paycashdata对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 
+		 try { 
+	            //创建一个远程对象 
+	            KindDataService kc = new KindData(); 
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8888，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(1103); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:1103/kindData",kc); 
+
+	            System.out.println(">>>>>INFO:远程kinddata对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 
+		 try { 
+	            //创建一个远程对象 
+			 
+			   LoginDataService lds = new LoginData(); 
+			   LocateRegistry.createRegistry(4028); 
+
+	     
+	            Naming.bind("rmi://localhost:4028/loginData",lds);
+			    
+			    TotalCouponPromotionDataService tcp=new TotalCouponDataController();
+	            TotalGiftPromotionDataService tgp=new TotalGiftDataController();
+	            TotalPromotionMethodDataService  tpm=new TotalMethodDataController();
+	            
+	            VipCouponPromotionDataService vcp=new VipCouponDataController();
+	            VipGiftPromotionDataService vgp=new VipGiftDataController();
+	            VipPromotionMethodDataService  vpm=new VipMethodDataController();
+	            VipDiscountPromotionDataService vdp=new VipDiscountDataController();
+	            
+	            BillManagementDataService bmd=new BillDataController();
+	            
+	            //本地主机上的远程对象注册表Registry的实例，并指定端口为8808，这一步必不可少（Java默认端口是1099），必不可缺的一步，缺少注册表创建，则无法绑定对象到远程注册表上 
+	            LocateRegistry.createRegistry(8808); 
+
+	            //把远程对象注册到RMI注册服务器上，并命名为MemberData 
+	            //绑定的URL标准格式为：rmi://host:port/name(其中协议名可以省略，下面两种写法都是正确的） 
+	            Naming.bind("rmi://localhost:8808/TotalCouponData",tcp);
+	            Naming.bind("rmi://localhost:8808/TotalGiftData",tgp);
+	            Naming.bind("rmi://localhost:8808/TotalMethodData",tpm);
+	            
+	            Naming.bind("rmi://localhost:8808/VipCouponData",vcp);
+	            Naming.bind("rmi://localhost:8808/VipGiftData",vgp);
+	            Naming.bind("rmi://localhost:8808/VipMethodData",vpm);
+	            Naming.bind("rmi://localhost:8808/VipDiscountData",vdp);
+	            
+	            Naming.bind("rmi://localhost:8808/BillData",bmd);
+	            
+	            System.out.println(">>>>>INFO:远程Data对象绑定成功！"); 
+	        } catch (RemoteException e) { 
+	            System.out.println("Promotion创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+		 
+		 try{
+			 MockDataService mds=new MockData();
+			 
+			 LocateRegistry.createRegistry(6666);
+			 Naming.bind("rmi://localhost:6666/mockData", mds);
+			 System.out.println(">>>>>INFO:远程Data对象绑定成功！");
+			 
+			 UserDataService uds=new UserData();
+			 LocateRegistry.createRegistry(4029);
+			 Naming.bind("rmi://localhost:4029/userData", uds);
+			 
+			 
+	        } catch (RemoteException e) { 
+	            System.out.println("Promotion创建远程对象发生异常！"); 
+	            e.printStackTrace(); 
+	        } catch (AlreadyBoundException e) { 
+	            System.out.println("发生重复绑定对象异常！"); 
+	            e.printStackTrace(); 
+	        } catch (MalformedURLException e) { 
+	            System.out.println("发生URL畸形异常！"); 
+	            e.printStackTrace(); 
+	        }
+	}
+	
+	public static void main(String[] args){
+		SetUpFrame a = new SetUpFrame();
+	}
+
+}
